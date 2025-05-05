@@ -71,27 +71,48 @@
             artista catalán Joan Miró (figura~\ref{joan-miro}).
 
             La imagen intermedia, resultado de aplicar la
-            imagen~\ref{joan-miro} como estilo a la orignal se peude ver
+            imagen~\ref{joan-miro} como estilo a la original se puede ver
             en~\ref{intermedio-clm}.
 
             \subsection{Álvaro Guerrero Espinosa}
+            Se ha explorado la propuesta variando utilizando imágenes de 128
+            píxeles y variando el peso del estilo relativo al peso del
+            contenido. Se ha intentado recuperar una imagen lo más parecida a la
+            original, pero intentando obtener al mismo tiempo una imagen intermedia
+            que represente correctamente el contenido y el estilo de las imágenes
+            utilizadas. Esto se decidió para evitar la solución trivial en la que se
+            establece un peso de estilo muy bajo que hace que todas las imágenes
+            sean iguales a la de contenido.
+
+            La imagen de estilo utilizada para generar la primera
+            transformación (la que se tratará de deshacer) es una imagen
+            promocional de un videojuego (figura~\ref{tm}).
+
+            La imagen intermedia, resultado de aplicar la
+            imagen~\ref{tm} como estilo a la original se puede ver
+            en~\ref{intermedio-age}.
 
             \subsection{José Antonio Verde Jiménez}
 
 
         \section{Resultados}
 
-            En el experimento desarrollado por César se ha observa que un mayor
+            En el experimento desarrollado por César se observa que un mayor
             número de capas convolucionales es capaz de recuperar más detalles
             de la imagen original. Además, la limitación a 128 píxeles muestra
             una mayor introducción de ruido en las transformaciones que perdura
             hasta el resultado final, como se puede ver en~\ref{final-clm-1}.
 
             Además, al emplear una imagen de otra ciudad (figura~\ref{city-2})
-            se ha observado que el modelo es capaz de recuperar mucho detelle
+            se ha observado que el modelo es capaz de recuperar mucho detalle
             de la imagen original. No obstante, los colores varían,
             predominando tonos más cálidos frente a las tonalidades frías de la
             imagen original~\ref{final-clm-2}.
+
+            En el experimento desarrollado por Álvaro se observa que un mayor
+            peso del estilo dificulta la tarea de invertir la operación. Sin
+            embargo, demasiado peso de estilo corre el riesgo de perder información
+            del contenido en la imagen intermedia, obteniendo un peor resultado.
 
 
     \section{Figuras}
@@ -130,6 +151,24 @@
         \includeinkscape[width=0.45\textwidth]{final-clm2.png}
         \caption{Imagen final 1 - César}
         \label{final-clm-2}
+    \end{figure}
+
+    \begin{figure}
+        \includeinkscape[width=0.45\textwidth]{tm.png}
+        \caption{Imagen de estilo para el experimento de Álvaro}
+        \label{tm}
+    \end{figure}
+
+    \begin{figure}
+        \includeinkscape[width=0.45\textwidth]{intermedio-age.png}
+        \caption{Imagen intermedia en el experimento de Álvaro}
+        \label{intermedio-age}
+    \end{figure}
+
+    \begin{figure}
+        \includeinkscape[width=0.45\textwidth]{final-age.png}
+        \caption{Imagen final - Álvaro}
+        \label{final-age}
     \end{figure}
 
     \end{report}
