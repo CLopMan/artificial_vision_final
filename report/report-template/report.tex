@@ -1,0 +1,151 @@
+\documentclass[es]{uc3mreport}
+
+
+
+\usepackage{import}  % import TeX files
+\usepackage{graphicx}
+
+
+
+% general config
+
+\graphicspath{{img/}}  % Images folder
+\addbibresource{references.bib}  % bibliography file
+
+\degree{Grado en Ingeniería Informática}
+\subject{Visión Artificial}
+% \shortsubject{LTX}  % optional
+\academicyear{2024-2025}
+\group{85}
+\author{
+    César López Mantecón  -- 100472092\\
+    Álvaro Guerrero Espinosa -- 100472294\\
+    José Antonio Verde Jiménez -- 100069420}
+% \team{Equipo 69}  % optional
+
+\shortauthor{\abbreviateauthor{César}{L.M.}, \abbreviateauthor{Álvaro}{G.E.} y \abbreviateauthor{José A.}{V.J.}}
+\lab{Práctica 2}
+\title{Inversión de Neural Style}
+% \shorttitle{La mejor memoria de la historia}  % optional
+\professor{Fernando Díaz de María\\Leire Paz Arbaizar}  % optional
+
+
+% report
+
+\begin{document}
+    \makecover
+
+%    \tableofcontents
+    % \listoffigures
+    % \listoftables
+
+    % contenidos
+    \begin{report}
+        \section{Propuesta}
+        El objetivo de este proyecto es el estudio de la capacidad de la red
+        para deshacer la transformación de estilo aplicando la imagen de
+            contenido original como imagen de estilo a una previamente
+            transformada. Es decir, se ha transformado una imagen aplicando un
+            estilo y se ha tratado de recuperar la imagen original aplicando
+            esta última como estilo.
+
+        La imagen empleada para la primera transformación será la que se muestra en la figura~\ref{original}.
+
+
+        \section{Metodología}
+        Para estudiar distintintas alternativas, cada uno de los miembros del
+        equipo ha trabajando por separado y con un estilo diferente. Con esto, se ha buscado de forma
+        independiente una solución al problema planteado. A continuación se
+        expone qué alternativas ha explorado cada integrante.
+
+            
+
+            \subsection{César López Mantecón}
+            Se ha explorado la propuesta variando el número de capas
+            convolucionales y limitando la imagen a 128 píxeles. Por último, se
+            ha tratado de recuperar una imagen lo más parecida a la original
+            empleando otra parecida como imagen de estilo.
+
+            La imagen de estilo utilizada para generar la primera
+            transformación (la que se tratará de deshacer) es una pintura del
+            artista catalán Joan Miró (figura~\ref{joan-miro}).
+
+            La imagen intermedia, resultado de aplicar la
+            imagen~\ref{joan-miro} como estilo a la orignal se peude ver
+            en~\ref{intermedio-clm}.
+
+            \subsection{Álvaro Guerrero Espinosa}
+
+            \subsection{José Antonio Verde Jiménez}
+
+
+        \section{Resultados}
+
+            En el experimento desarrollado por César se ha observa que un mayor
+            número de capas convolucionales es capaz de recuperar más detalles
+            de la imagen original. Además, la limitación a 128 píxeles muestra
+            una mayor introducción de ruido en las transformaciones que perdura
+            hasta el resultado final, como se puede ver en~\ref{final-clm-1}.
+
+            Además, al emplear una imagen de otra ciudad (figura~\ref{city-2})
+            se ha observado que el modelo es capaz de recuperar mucho detelle
+            de la imagen original. No obstante, los colores varían,
+            predominando tonos más cálidos frente a las tonalidades frías de la
+            imagen original~\ref{final-clm-2}.
+
+
+    \section{Figuras}
+
+    \begin{figure}
+        \includeinkscape[width=0.45\textwidth]{tar3.png}
+        \caption{Imagen Original}
+        \label{original}
+    \end{figure}
+
+    \begin{figure}
+        \includeinkscape[width=0.45\textwidth]{joan_miro.png}
+        \caption{Imagen de estilo para el experimento de César}
+        \label{joan-miro}
+    \end{figure}
+
+    \begin{figure}
+        \includeinkscape[width=0.45\textwidth]{intermedio.png}
+        \caption{Imagen intermedia en el experimento de César}
+        \label{intermedio-clm}
+    \end{figure}
+
+    \begin{figure}
+        \includeinkscape[width=0.45\textwidth]{final-clm1.png}
+        \caption{Imagen final 1 - César}
+        \label{final-clm-1}
+    \end{figure}
+
+    \begin{figure}
+        \includeinkscape[width=0.45\textwidth]{other_city.png}
+        \caption{Segunda imagen de estilo - César}
+        \label{city-2}
+    \end{figure}
+
+    \begin{figure}
+        \includeinkscape[width=0.45\textwidth]{final-clm2.png}
+        \caption{Imagen final 1 - César}
+        \label{final-clm-2}
+    \end{figure}
+
+    \end{report}
+
+
+%    % bibliography
+%    \label{bibliography}
+%    \part{Referencias}
+%    \printbibliography
+    % \printbibliography[heading=bibintoc,title={Referencias}]  % alternative
+
+    % appendices
+%    \begin{appendices}
+%        \part{Apéndices}  % optional
+%        \section{Mi apéndice}
+%        \lipsum[1]
+%    \end{appendices}
+
+\end{document}
