@@ -1,0 +1,6 @@
+it-010
+conv_layers: 10
+content_weight: 1
+style_weight: 1000.0
+rounds: 10
+input_img: content
