@@ -1,0 +1,5 @@
+it-04
+content_weight: 1
+style_weight: 1000.0
+rounds: 20
+input_img: content
