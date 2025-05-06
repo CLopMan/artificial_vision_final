@@ -147,7 +147,7 @@ class ContentLoss(torch.nn.Module):
         self.target = target.detach()
 
     def forward(self, input):
-        self.loss = F.mse_loss(input, self.target)
+        self.loss = torch.nn.functional.mse_loss(input, self.target)
         return input
 
 class StyleLoss(torch.nn.Module):
@@ -157,7 +157,7 @@ class StyleLoss(torch.nn.Module):
 
     def forward(self, input):
         G = gram_matrix(input)
-        self.loss = F.mse_loss(G, self.target)
+        self.loss = torch.nn.functional.mse_loss(G, self.target)
         return input
 
     def gram_matrix(self, input):
@@ -221,7 +221,7 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
 
         if name in style_layers:
             # add style loss:
-            target_feature = model(style_img.raw_image).detach()
+            target_feature = model(style_img).detach()
             style_loss = StyleLoss(target_feature)
             model.add_module("style_loss_{}".format(i), style_loss)
             style_losses.append(style_loss)
@@ -237,13 +237,16 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
 
 def get_input_optimizer(input_img):
     # this line to show that input is a parameter that requires a gradient
-    optimizer = optim.LBFGS([input_img.requires_grad_()])
+    optimizer = torch.optim.LBFGS([input_img.requires_grad_()])
     return optimizer
 
 def run_style_transfer(cnn, normalization_mean, normalization_std,
                        content_img, style_img, input_img, num_steps=300,print_step=50,
                        style_weight=1000000, content_weight=1):
     """Run the style transfer."""
+    content_img = content_img.raw_image
+    style_img = style_img.raw_image
+    input_img = input_img.raw_image
     print('Building the style transfer model..')
     model, style_losses, content_losses = get_style_model_and_losses(cnn,
         normalization_mean, normalization_std, style_img, content_img)
@@ -288,3 +291,17 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
     input_img.data.clamp_(0, 1)
 
     return Image(image=input_img)
+
+def gram_matrix(input):
+    a, b, c, d = input.size()  
+    # a=batch size(=1)
+    # b=number of feature maps
+    # (c,d)=dimensions of a f. map (N=c*d)
+
+    features = input.view(a * b, c * d)  # resise F_XL into \hat F_XL
+
+    G = torch.mm(features, features.t())  # compute the gram product
+
+    # we 'normalize' the values of the gram matrix
+    # by dividing by the number of element in each feature maps.
+    return G.div(a * b * c * d)
