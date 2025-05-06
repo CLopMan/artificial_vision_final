@@ -11,6 +11,7 @@
 # Y lo que hace es modificar la de la entrada para que sea como la de contenido
 # en el estilo de la de estilo.
 
+import dataclasses
 import torch
 import torch.nn
 import torch.nn.functional
@@ -22,9 +23,11 @@ import matplotlib.pyplot
 import torchvision.transforms
 import torchvision.models
 
+import multiprocessing
 import copy
 import os
 import numpy
+import scipy.ndimage
 
 
 # ==== Metaprogramming ====================================================== #
@@ -120,14 +123,20 @@ class Image:
         return self.unloader(self.__image.cpu().clone().squeeze(0))
 
     @property
+    def size (self):
+        return self.raw_image.data.size()
+
+    @property
     def raw_image (self):
         return self.__image
 
     def show (self, title="", ax=None):
         image = self.image
         if ax is None:
-            matplotlib.pyplot.imshow(image)
-            matplotlib.title(title)
+            fig, axes = matplotlib.pyplot.subplots(nrows=1, ncols=2)
+            self.show(title, axes[0])
+            # matplotlib.pyplot.imshow(image)
+            # matplotlib.pyplot.title(title)
         else:
             ax.imshow(image)
             ax.set_title(title)
@@ -181,7 +190,7 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
                                content_layers=['conv_4'],
                                style_layers=[f"conv_{i}" for i in range(1, 6)]):
     # NOTE: Should I remove this shit
-    cnn = copy.deepcopy(cnn())
+    cnn = copy.deepcopy(cnn)
 
     # normalization module
     normalization = Normalization(normalization_mean, normalization_std).to(device())
@@ -254,6 +263,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
 
     print('Optimizing..')
     run = [0]
+    results = []
     while run[0] <= num_steps:
 
         def closure():
@@ -281,6 +291,9 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
                 print("run {}:".format(run))
                 print('Style Loss : {:4f} Content Loss: {:4f}'.format(
                     style_score.item(), content_score.item()))
+                temp = input_img.clone()
+                temp.data.clamp_(0, 1)
+                results.append(Image(image=temp))
                 print()
 
             return style_score + content_score
@@ -290,7 +303,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
     # a last correction...
     input_img.data.clamp_(0, 1)
 
-    return Image(image=input_img)
+    return (Image(image=input_img), results)
 
 def gram_matrix(input):
     a, b, c, d = input.size()  
@@ -305,3 +318,72 @@ def gram_matrix(input):
     # we 'normalize' the values of the gram matrix
     # by dividing by the number of element in each feature maps.
     return G.div(a * b * c * d)
+
+
+# ==== Generation & Things ================================================== #
+
+@dataclasses.dataclass
+class OperationResult:
+    step    : int
+    content : Image
+    style   : Image
+    output  : Image
+    steps   : list[Image]
+
+    def __draw_pair(self, title_left, title_right, img_left, img_right):
+        fig, axes = matplotlib.pyplot.subplots(nrows=1, ncols=2)
+        ax_left, ax_right = axes.flatten()
+        img_left.show(title = title_left, ax = ax_left)
+        img_right.show(title = title_right, ax = ax_right)
+
+    def show(self):
+        self.__draw_pair("Content Image", "Style Image", self.content, self.style)
+        self.output.show(title="Output Image")
+        for i in range(0, len(self.steps), 2):
+            if i + 1 < len(self.steps):
+                self.__draw_pair(f"Step {self.step*i}", f"Step {self.step*(i+1)}",
+                                 self.steps[i], self.steps[i+1])
+            else:
+                self.steps[i].show(title = f"Step {self.step*i}")
+        """
+        row_count = 2 + (len(self.steps) + 1) // 2
+        fig, axes = matplotlib.pyplot.subplots(nrows=row_count, ncols=2)
+        axes = axes.flatten()
+        self.content.show(title="Content Image", ax=axes[0])
+        self.style.show(title="Style Image", ax=axes[1])
+        self.output.show(title="Output Image", ax=axes[2])
+        for i in range(len(self.steps)):
+            self.steps[i].show(title=f"Step {self.step * i}", ax=axes[4 + i])
+        """
+
+def generate_noise_image(size):
+    img = torch.randn(size, device=device())
+    img = scipy.ndimage.gaussian_filter(
+            img.squeeze().permute(1, 2, 0).cpu().numpy(), 3.0)
+    img = img - img.min()
+    img = img / img.max()
+    img = torch.from_numpy(numpy.ascontiguousarray(numpy.transpose(
+        img, (2 ,0 ,1)))).unsqueeze(0).to(device(), torch.float)
+    return Image(image=img)
+
+def apply_conversion(content : Image, style : Image, steps, step) -> OperationResult:
+    input = generate_noise_image(content.size)
+    output = run_style_transfer(cnn(), cnn_normalization_mean(),
+                                cnn_normalization_std(), content, style, input,
+                                num_steps=steps, print_step=step)
+    return OperationResult(step, content, style, output[0], output[1])
+
+
+def apply_and_reverse(content : Image, style : Image, steps, step) -> \
+        tuple[OperationResult, OperationResult]:
+    output = apply_conversion(content, style, steps, step)
+    reverse = apply_conversion(output.output, content, steps, step)
+    return output, reverse
+
+
+def apply_and_reverse_matrix(content : Image, style : Image, steps, step):
+    output = apply_conversion(content, style, steps, step)
+    pool = multiprocessing.Pool(len(output.steps))
+    args = [(x, content, steps, step) for x in output.steps]
+    reverses = pool.starmap(apply_conversion, args)
+    return output, reverses
