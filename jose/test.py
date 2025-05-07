@@ -16,11 +16,16 @@ def main (style_path, steps, step):
 
     stamp = str(time.time()).replace(".", "-")
     stamp += "-" + os.path.basename(style_path).split(".")[0]
+    output.output.show("Result Image")
+    matplotlib.pyplot.savefig(os.path.join("results", "%s-result.png" % stamp))
+    output.reverse.show("Reversed Image")
+    matplotlib.pyplot.savefig(os.path.join("results", "%s-revers.png" % stamp))
     show_matrix(matrix, steps, step)
     matplotlib.pyplot.savefig(os.path.join("results", "%s-matrix.png" % stamp))
     output.show()
     matplotlib.pyplot.savefig(os.path.join("results", "%s-output.png" % stamp))
     matplotlib.pyplot.show()
+
 
 if __name__ == "__main__":
     main(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]))

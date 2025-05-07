@@ -133,8 +133,8 @@ class Image:
     def show (self, title="", ax=None):
         image = self.image
         if ax is None:
-            fig, axes = matplotlib.pyplot.subplots(nrows=1, ncols=2)
-            self.show(title, axes[0])
+            fig, axes = matplotlib.pyplot.subplots(nrows=1, ncols=1)
+            self.show(title, axes)
             # matplotlib.pyplot.imshow(image)
             # matplotlib.pyplot.title(title)
         else:
