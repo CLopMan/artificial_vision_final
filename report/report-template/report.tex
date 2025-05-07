@@ -1,6 +1,8 @@
 \documentclass[es]{uc3mreport}
 
 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 
 \usepackage{import}  % import TeX files
 \usepackage{graphicx}
@@ -93,6 +95,25 @@
             en~\ref{intermedio-age}.
 
             \subsection{José Antonio Verde Jiménez}
+            Se ha explorado la propuesta utilizando imágenes tanto de 128 como
+            512 píxeles en CPU como en GPU. Se ha estudiado cómo afecta el
+            número de iteraciones para \textit{convertir} la imagen de
+            contenido con el estilo de la imagen de estilo; al número de
+            iteraciones para \textit{revertir} la imagen resultante utilizando
+            la imagen de contenido original.
+
+            Se ha utilizado una estructura matricial~\ref{jose-2}. Donde las filas muestran
+            el número de iteraciones que se han utilizado para
+            \textit{convertir} la imagen original y revertirla. Y las columnas
+            muestran el número de iteraciones que se han utilizado para
+            \textit{revertir} la imagen convertida. Por ejemplo, en este caso,
+            la fila $f$ y la columna $c$ indican que: se han utilizado $c$
+            iteraciones para convertirla; y $f$ iteraciones para revertirla.
+
+            Se ha probado distintos estilos. En primer lugar el estilo de manga
+            (cómic japonés en blanco y negro), pero no daba buenos resultados.
+            Así que se optó por un estilo de animación japonesa (anime) con
+            fondos de algunas series y tiene buenos resultados ~\ref{jose-1}.
 
 
         \section{Resultados}
@@ -113,6 +134,14 @@
             peso del estilo dificulta la tarea de invertir la operación. Sin
             embargo, demasiado peso de estilo corre el riesgo de perder información
             del contenido en la imagen intermedia, obteniendo un peor resultado.
+
+            En el experimento desarrollado por José se observa que hay un
+            punto donde se dejan de observar cambios en el número de
+            iteraciones en la operación de revertir. Es en la diagonal de la
+            matriz: cuando el número de iteraciones de revertir es mayor al de
+            convertir, no se observan cambios significativos. Además utilizar
+            un fondo sencillo ayuda mucho a la hora de la reversión. Véase la
+            matriz en~\ref{jose-2}.
 
 
     \section{Figuras}
@@ -169,6 +198,20 @@
         \includeinkscape[width=0.45\textwidth]{final-age.png}
         \caption{Imagen final - Álvaro}
         \label{final-age}
+    \end{figure}
+
+    \begin{figure}
+        \includegraphics[width=0.45\textwidth]{img/jose-converted.png}
+        \includegraphics[width=0.45\textwidth]{img/jose-reverse.png}
+        \caption{Convertida y Revertida - José}
+        \label{jose-1}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.6\textwidth]{img/matriz.png}
+        \caption{Matriz - José}
+        \label{jose-2}
     \end{figure}
 
     \end{report}
