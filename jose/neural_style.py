@@ -16,6 +16,7 @@ import torch
 import torch.nn
 import torch.nn.functional
 import torch.optim
+import time
 
 import PIL
 import matplotlib.pyplot
@@ -23,7 +24,6 @@ import matplotlib.pyplot
 import torchvision.transforms
 import torchvision.models
 
-import multiprocessing
 import copy
 import os
 import numpy
@@ -328,6 +328,7 @@ class OperationResult:
     content : Image
     style   : Image
     output  : Image
+    reverse : Image
     steps   : list[Image]
 
     def __draw_pair(self, title_left, title_right, img_left, img_right):
@@ -337,6 +338,7 @@ class OperationResult:
         img_right.show(title = title_right, ax = ax_right)
 
     def show(self):
+        """
         self.__draw_pair("Content Image", "Style Image", self.content, self.style)
         self.output.show(title="Output Image")
         for i in range(0, len(self.steps), 2):
@@ -352,9 +354,10 @@ class OperationResult:
         self.content.show(title="Content Image", ax=axes[0])
         self.style.show(title="Style Image", ax=axes[1])
         self.output.show(title="Output Image", ax=axes[2])
+        if self.reverse != None:
+            self.reverse.show(title="Reverse Image", ax=axes[3])
         for i in range(len(self.steps)):
             self.steps[i].show(title=f"Step {self.step * i}", ax=axes[4 + i])
-        """
 
 def generate_noise_image(size):
     img = torch.randn(size, device=device())
@@ -371,19 +374,37 @@ def apply_conversion(content : Image, style : Image, steps, step) -> OperationRe
     output = run_style_transfer(cnn(), cnn_normalization_mean(),
                                 cnn_normalization_std(), content, style, input,
                                 num_steps=steps, print_step=step)
-    return OperationResult(step, content, style, output[0], output[1])
+    return OperationResult(step, content, style, output[0], None, output[1])
 
 
 def apply_and_reverse(content : Image, style : Image, steps, step) -> \
         tuple[OperationResult, OperationResult]:
     output = apply_conversion(content, style, steps, step)
     reverse = apply_conversion(output.output, content, steps, step)
+    output.reverse = reverse.output
     return output, reverse
 
 
+def process (current, max):
+    perc = round((current * 100) / max, 2)
+    print("\033[33;1m%3.2f%%\033[0m" % perc)
+
 def apply_and_reverse_matrix(content : Image, style : Image, steps, step):
+    count = (steps + step - 1) // step + 2
     output = apply_conversion(content, style, steps, step)
-    pool = multiprocessing.Pool(len(output.steps))
-    args = [(x, content, steps, step) for x in output.steps]
-    reverses = pool.starmap(apply_conversion, args)
-    return output, reverses
+    process(1, count)
+    matrix = []
+    index = 1
+    for part in output.steps:
+        matrix.append(apply_conversion(part, content, steps, step).steps)
+        index += 1
+        process(index, count)
+    output.reverse = matrix[-1][-1].clone()
+    return output, matrix
+
+def show_matrix(matrix, steps, step):
+    fig, axes = matplotlib.pyplot.subplots(nrows=len(matrix), ncols=len(matrix[0]))
+    for r in range(len(matrix)):
+        for c in range(len(matrix[0])):
+            ax = axes[r][c]
+            matrix[r][c].show(title=f"conv {c*step} -- rev {r*step}", ax=ax)
